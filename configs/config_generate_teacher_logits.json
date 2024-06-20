@@ -1,0 +1,28 @@
+{
+    "model_arch":{
+        "teacher_lang_model":"gpt2-medium",
+        "teacher_model_ckpt_path":"../term_project_code/model_ckpts/26Apr24_Run_Multi_GPU_GPT2-Medium/model_checkpoints/checkpoint_2.pt",
+        "gpu_id":0
+    },
+    "dataset_kwargs":{
+        "_type":"cnn_dailymail",
+        "cnn_dataset_kwargs": {
+            "data_dir":"../term_project_code/data/cnn_dailymail_reduced",
+            "train_dataset":"train_within_550.csv",
+            "validation_dataset":"val_within_500.csv",
+            "validation_subset":"val_within_500.csv",
+            "train_batch_size":2,
+            "val_batch_size":6
+        }
+    },
+    "processing_strategy_kwargs":{
+        "logits_processing_strategy":"top_k_percent",
+        "temperature":0.7, 
+        "nucleus_sampling":true, 
+        "percent_k":0.05,
+        "save_format":"npy"
+    },
+    "output_kwargs":{
+        "output_dir":"teacher_logits/cnn_dailymail/gpt2-medium_logits"
+    }
+}

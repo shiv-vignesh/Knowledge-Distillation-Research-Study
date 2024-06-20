@@ -1,0 +1,58 @@
+{
+    "model_kwargs":{
+    "teacher_lang_model":"gpt2-medium",
+    "student_lang_model":"gpt2",
+        "generation_kwargs":{
+            "max_generation_length":80, 
+            "num_beams":5, 
+            "early_stopping":true
+        },    
+    "teacher_gpu_device_id":5,
+    "student_gpu_device_id":6,
+    "teacher_model_ckpt_path":"",
+    "student_model_ckpt_path":""
+    },
+
+    "dataset_kwargs":{
+        "_type":"cnn_dailymail",
+        "cnn_dataset_kwargs": {
+            "data_dir":"../term_project_code/data/cnn_dailymail_reduced",
+            "train_dataset":"train_within_550.csv",
+            "validation_dataset":"val_within_500.csv",
+            "validation_subset":"val_within_500.csv",
+            "train_batch_size":1,
+            "val_batch_size":6
+        }
+    },
+
+    "trainer_kwargs": {
+        "training_type":"teacher_finetune",
+        "output_dir":"teacher_finetune_dir/gpt2-medium",
+        "epochs": 5,
+        "monitor_train": true,
+        "monitor_val": true,
+        "monitor_test": true,
+        "kd_ratio":0.5,
+        "gradient_accumulation_steps":96,
+        "gradient_clipping": 1.0
+    },
+
+    "optimizer_kwargs": {
+        "_description": "default_lr is for any layer other than lm",
+        "default_lr": 0.00005,
+        "type": "AdamW",
+        "kwargs": {
+            "weight_decay": 0.1,
+            "amsgrad": true
+        },
+        "lm_lr": 5e-5
+    },
+
+    "lr_scheduler_kwargs": {
+        "_type": "linear_lr_warmup",
+        "increase_batch_size_on_plateau": false,
+        "num_warmup_steps": 200,
+        "num_training_steps": -1,
+        "max_warmup_steps": 1000
+    }
+}
