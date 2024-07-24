@@ -213,7 +213,6 @@ class DistillationTrainer:
         return mask
 
     def train(self):
-
         self.cur_epoch = 0        
 
         try:

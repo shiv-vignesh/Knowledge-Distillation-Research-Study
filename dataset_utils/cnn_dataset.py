@@ -1,8 +1,10 @@
 import pandas as pd
 
 import torch 
+import torch.utils
 from torch.utils.data import Dataset
 
+import torch.utils.data
 from transformers import GPT2Tokenizer
 
 class CNNDataset(Dataset):
@@ -138,3 +140,103 @@ class CNNCollatefn(object):
     def __call__(self, data_items):
         return self.collate_fn(data_items)
         
+class PPO_CNNCollatefn(CNNCollatefn):
+
+    def __init__(self, lang_model: str, dataset_type: str, 
+                 max_prompt_length = 512, max_response_length=256,
+                 special_token: str = None, truncation: bool = True, 
+                 padding: str = "longest", return_meta_data: bool = False):
+        super().__init__(lang_model, dataset_type, special_token, truncation, padding, return_meta_data)
+        
+        self.max_prompt_length = max_prompt_length 
+        self.max_response_length = max_response_length
+
+        self.pad_token_id = self.tokenizer.pad_token_id
+        self.eos_token_id = self.tokenizer.eos_token_id
+
+    def collate_fn(self, data_items: dict):
+        
+        batch_size = len(data_items)
+
+        model_batch = {
+            "input_ids":torch.ones(batch_size, self.max_prompt_length, dtype=torch.long) * self.pad_token_id,
+            "attention_mask":torch.zeros(batch_size, self.max_prompt_length, dtype=torch.long),
+            "label_ids":torch.ones(batch_size, self.max_response_length, dtype=torch.long) * self.pad_token_id
+            # "label_ids":torch.ones(batch_size, self.max_response_length, dtype=torch.long) * -100 
+        }
+
+        no_model_batch = {
+            "_ids":[],
+            "full_label_ids":[]
+        }
+
+        max_label_size = 0
+
+        for idx, data_item in enumerate(data_items):
+            _id = data_item["id"]
+
+            article = data_item["article"]
+            highlights = data_item["highlights"]
+
+            '''<|startoftext|> summarize: ---- </s>'''
+            article_prompt = f'{self.start_token} {self.summarize_token} {article} {self.sep_token}'
+            article_prompt_ids = self.tokenizer(
+                article_prompt, return_tensors="pt", truncation=True, max_length=self.max_prompt_length
+            )['input_ids'].squeeze()
+
+            response_ids = self.tokenizer(
+                highlights, return_tensors="pt", truncation=True, max_length=self.max_response_length
+            )['input_ids'].squeeze()
+
+            prompt_length = article_prompt_ids.size(0)
+            response_length = response_ids.size(0)
+
+            model_batch['input_ids'][idx, -prompt_length:] = article_prompt_ids
+            model_batch['attention_mask'][idx, -prompt_length:] = 1 
+            model_batch['label_ids'][idx, -response_length:] = response_ids
+            
+            no_model_batch['_ids'].append(_id)
+
+            full_label_ids = self.tokenizer(
+                highlights, return_tensors="pt", truncation=False
+            )['input_ids']
+
+            no_model_batch['full_label_ids'].append(full_label_ids)
+
+            if response_ids.size(0) > max_label_size:
+                max_label_size = response_ids.size(0)
+
+        # for idx, label_ids in enumerate(no_model_batch['full_label_ids']):            
+
+        #     no_model_batch["full_label_ids"][idx] = torch.nn.functional.pad(
+        #         label_ids, 
+        #         (0, max_label_size - label_ids.size(0)),
+        #         value=self.pad_token_id
+        #     )
+
+        return model_batch, no_model_batch
+    
+if __name__ == "__main__":
+
+    dataset = CNNDataset(
+        csv_path="../../term_project_code/data/cnn_dailymail_reduced/train_within_550.csv",
+        dataset_type='train'
+    )
+
+    collate_fn = PPO_CNNCollatefn(
+        lang_model='gpt2',
+        dataset_type=dataset.dataset_type
+    )
+
+    dataloader = torch.utils.data.DataLoader(
+        dataset, batch_size=6, shuffle=True, collate_fn=collate_fn
+    )
+
+    for model_batch in dataloader:
+        print(model_batch['label_ids'].size())
+        for input_ids in model_batch['label_ids']:
+            non_pad_indices = torch.sum(input_ids != -100)
+            print(non_pad_indices)
+
+        exit(1)
+    

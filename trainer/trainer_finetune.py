@@ -294,7 +294,6 @@ class FineTuneTrainer:
         self.logger.log_message(f'Training Epoch: {self.cur_epoch} - loss: {average_loss:.4f} perplexity: {perplexity:.4f}')
         self.logger.log_new_line()
 
-
     def eval_one_epoch(self):
         ''' 
         TODO, Fix this method 

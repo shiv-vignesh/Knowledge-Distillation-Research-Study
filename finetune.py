@@ -24,7 +24,6 @@ def create_student_model(model_kwargs:dict):
 
     return model
 
-
 def main(config_json_path:str):
     config_finetune = json.load(open(config_json_path))
     

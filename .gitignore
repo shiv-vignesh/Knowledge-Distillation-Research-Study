@@ -1,0 +1,7 @@
+*.pyc
+*kd_dev_env*
+*.err
+*.out
+*.txt
+*jobs/*
+*data*
