@@ -356,12 +356,11 @@ class PPOTrainer:
                     
                     loss = rl_loss + lm_loss
                     
-                    print(f'RL Loss: {rl_loss:.4f} LM Loss: {lm_loss:.4f}')
+                    print(f'Batch Idx: {batch_idx} RL Loss: {rl_loss:.4f} LM Loss: {lm_loss:.4f}')
                     
                     loss = loss/self.gradient_accumulation_steps if self.gradient_accumulation_steps != 0 else loss
                     loss.backward()
-                    
-                    
+                                        
                     if self.gradient_clipping:
                         torch.nn.utils.clip_grad_norm_(self.student_model.parameters(), self.gradient_clipping)
 
@@ -497,7 +496,7 @@ class PPOTrainer:
                 
 
             gc.collect()
-            if i==10:
+            if i==15:
                 break
         
         if ppo_rl_elements:        

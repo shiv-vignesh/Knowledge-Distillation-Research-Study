@@ -3,5 +3,4 @@
 *.err
 *.out
 *.txt
-*jobs/*
-*data*
+data/*

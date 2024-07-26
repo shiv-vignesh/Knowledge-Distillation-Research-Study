@@ -157,30 +157,32 @@ class Losses:
         n = mask.sum()
 
         log_ratio = (logprobs - old_logprobs) * mask
+        print(log_ratio)
         ratio = torch.exp(log_ratio.float())
+        print(ratio)
         ratio = ratio * w
 
-        ratio = torch.clamp(ratio, -cliprange, cliprange)
+        # ratio = torch.clamp(ratio, -cliprange, cliprange)
 
         # print(ratio[0])
         # print(log_ratio[0])
 
         # exit(1)
 
-        # assert any(~torch.isinf(ratio.view(-1))) & any(~torch.isnan(ratio.view(-1)))
-        # assert any(~torch.isinf(advantages.view(-1))) & any(~torch.isnan(advantages.view(-1)))
+        assert any(~torch.isinf(ratio.view(-1))) & any(~torch.isnan(ratio.view(-1)))
+        assert any(~torch.isinf(advantages.view(-1))) & any(~torch.isnan(advantages.view(-1)))
 
-        if any(torch.isinf(advantages).view(-1)):
-            print("[ERROR] advantage inf")
+        # if any(torch.isinf(advantages).view(-1)):
+        #     print("[ERROR] advantage inf")
         
-        if any(torch.isinf(ratio).view(-1)):
-            print("[ERROR] ratio inf")
+        # if any(torch.isinf(ratio).view(-1)):
+        #     print("[ERROR] ratio inf")
 
-        if any(torch.isnan(advantages).view(-1)):
-            print("[ERROR] advantage nan")
+        # if any(torch.isnan(advantages).view(-1)):
+        #     print("[ERROR] advantage nan")
         
-        if any(torch.isnan(ratio).view(-1)):
-            print("[ERROR] ratio nan")
+        # if any(torch.isnan(ratio).view(-1)):
+        #     print("[ERROR] ratio nan")
 
         pg_loss1 = -advantages * ratio
         pg_loss2 = -advantages * torch.clamp(
@@ -247,7 +249,11 @@ class Losses:
         advantages = compute_advantages_and_returns(
             ppo_rl_batch.batch_reward.to(ppo_logits.device), mask.to(ppo_logits.device)
         ) 
+        
+        print(f'Advantages: {advantages}')
 
+        print()
+        print(f'Computing PG Loss')
         pg_loss = Losses.compute_pg_loss(logprobs=log_probs, old_logprobs=ppo_rl_batch.batch_logprobs.to(ppo_logits.device), 
                                          advantages=advantages, mask=mask.to(ppo_logits.device),
                                          w=ppo_rl_batch.batch_w.to(ppo_logits.device), 
@@ -265,6 +271,8 @@ class Losses:
 
 
         loss = pg_loss + reg_loss
+        
+        # loss = reg_loss
         stats = {"rewards":cumsum_rewards}
 
         return loss, stats
