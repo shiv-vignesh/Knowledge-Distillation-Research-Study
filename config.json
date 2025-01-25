@@ -1,0 +1,75 @@
+{
+    "model_arch":{
+        "lang_model":"gpt2-medium",
+        "generation_kwargs":{
+            "max_generation_length":80, 
+            "num_beams":5, 
+            "early_stopping":true
+        },
+    "gpu_device_id":7
+    },
+
+    "trainer_kwargs": {
+        "epochs": 5,
+        "monitor_train": true,
+        "monitor_val": false,
+        "monitor_test": true,
+        "device": "cuda",
+        "gradient_clipping": 1.0,
+        "output_dir": "model_ckpts/26Apr24_Run_Multi_GPU_GPT2-Medium",
+        "load_from_checkpoint": true,
+        "is_training": true,
+        "use_cache": false,
+        "first_val_epoch": 0, 
+        "metrics":["rouge"],
+        "gradient_accumulation_steps":96,
+        "save_predictions":true,
+        "adaptive_loss_scaling":false,
+        "loss_scaling_batch":4096,
+        "adaptive_loss_metric":"rougeL",
+        "baseline_threshold":0.11, 
+        "ckpt_training_batch":10000,
+        "multi_gpu":true,
+        "multi_gpu_ids":[1, 3, 4],
+        "n_batch_ckpt_save":5000
+    },
+
+    "optimizer_kwargs": {
+        "_description": "default_lr is for any layer other than lm",
+        "default_lr": 0.00005,
+        "type": "AdamW",
+        "kwargs": {
+            "weight_decay": 0.1,
+            "amsgrad": true
+        },
+        "lm_lr": 5e-5
+    },
+
+    "lr_scheduler_kwargs": {
+        "_description": "linear lr scheduler with warmup and linear decay",
+        "increase_batch_size_on_plateau": false,
+        "num_warmup_steps": 200,
+        "num_training_steps": -1,
+        "max_warmup_steps": 1000
+    },
+
+    "callbacks_kwargs": {
+        "_description": "early stopping",
+        "kwargs": {
+            "save_final_model": false,
+            "patience": 3,
+            "mode": "max",
+            "threshold": 0.005
+        }
+    },
+
+    "dataset_kwargs": {
+        "data_dir":"data",
+        "train_dataset":"train.csv",
+        "validation_dataset":"val.csv",
+        "validation_subset":"subset_val.csv",
+        "train_batch_size":2,
+        "val_batch_size":6
+    }
+
+}
