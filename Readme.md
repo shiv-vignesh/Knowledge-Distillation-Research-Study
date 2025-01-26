@@ -1,8 +1,38 @@
 # Knowledge Distillation of Language Models. 
 
 Knowledge Distillation is a popular technique adopted in Deep Learning to distill knowledge from a Teacher (Large) model to a Student (Small) model. 
-The intuition is to train the student model that has the same performance of the Teacher Model with the added benefits of hosting and running a student 
-model. 
+The intuition is to train the student model that has similar performance to that of the Teacher Model with the added benefits of hosting and running a student 
+model on a limited compute hardware. 
+
+The results displayed is of GPT2 Causal Model fine-tuned or KD on the CNN-Dailymail dataset. The CNN/Daily Mail dataset comprises over 300,000 unique English-language news articles from CNN and the Daily Mail. 
+
+![Divergence_based_KD_pipeline](readme_assets/metrics.png)
+![Divergence_based_KD_pipeline](readme_assets/samples.png)
+
+The framework supports different types of Knowledge Distillation.
+
+- Divergence Based KD 
+    - Forward KL Divergence: Measures how much the student model's predictions diverge from the teacher's output.
+    - Reverse KL Divergence: Measures how much the teacher model's predictions diverge from the student's output.
+    - Jensen-Shannon (JS) Divergence: A symmetric measure that captures differences between the teacher and student model outputs by calculating the midpoint distribution.
+
+    ![Divergence_based_KD_pipeline](readme_assets/Divergence_KD-pipeline.png)
+
+- Policy Gradient Based KD (Reward-Based Distillation)
+
+    - Immediate and long-term reward calculations based on log probabilities of teacher and student models. 
+    - Weighted learning with normalized long-term rewards for better optimization. 
+
+    - Mixed Sampling Approach: Allows blending teacher and student logits using an adjustable alpha value to smooth learning. Temperature scaling for controlled knowledge transfer.
+
+    - Token Frequency Penalty: Reduces over-reliance on frequently occurring tokens to promote diversity.
+    - Diversity Penalty: Ensures diverse generation by measuring Euclidean distances between token embeddings.
+    - Entropy Penalty: Encourages balanced token distribution by penalizing low-entropy predictions.    
+
+    ![Divergence_based_KD_pipeline](readme_assets/PG_KD-pipeline.png)
+    - Overall Policy Gradient Pipeline
+    ![Divergence_based_KD_pipeline](readme_assets/PG_KD-penalty.png)
+    - Overall Policy Gradient Pipeline with Penalty
 
 ## Training Instructions 
 
